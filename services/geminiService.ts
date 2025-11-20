@@ -64,7 +64,7 @@ export const generateThumbnail = async (
         imageConfig: {
            aspectRatio: "16:9",
            // Optional: Request higher resolution if needed, defaults to 1K.
-           // imageSize: "2K" 
+           imageSize: "2K" 
         }
       }
     });
