@@ -16,21 +16,35 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-        const has = await window.aistudio.hasSelectedApiKey();
-        setHasApiKey(has);
-      } else {
-        // Fallback if not running in AI Studio environment
-        setHasApiKey(true);
+      try {
+        if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+          const has = await window.aistudio.hasSelectedApiKey();
+          setHasApiKey(has);
+        } else {
+          // Fallback if not in AI Studio: check for env var, otherwise assume no key
+          setHasApiKey(!!import.meta.env.VITE_GEMINI_API_KEY);
+        }
+      } catch (error) {
+        console.error("Error checking API key:", error);
+        setHasApiKey(false); // Default to false on error
       }
     };
     checkKey();
   }, []);
 
   const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasApiKey(true);
+    try {
+      if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+        await window.aistudio.openSelectKey();
+        const has = await window.aistudio.hasSelectedApiKey();
+        setHasApiKey(has);
+      } else {
+        // Provide guidance for users not in AI Studio
+        alert("Please set your GEMINI_API_KEY in a .env.local file to use this application outside of AI Studio.");
+      }
+    } catch (error) {
+      console.error("Error opening API key selection:", error);
+      setErrorMsg("Could not verify API key. Please try again.");
     }
   };
 

@@ -13,12 +13,12 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props 
 }) => {
-  const baseStyles = "px-6 py-3 rounded-xl font-bold transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "px-6 py-3 rounded-xl font-bold transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 focus:ring-red-500 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0";
   
   const variants = {
-    primary: "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-lg shadow-red-900/20",
-    secondary: "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700",
-    outline: "bg-transparent border-2 border-zinc-700 hover:border-zinc-500 text-zinc-300"
+    primary: "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-900/20 hover:from-red-600 hover:to-red-600 disabled:from-zinc-700 disabled:to-zinc-700 disabled:shadow-none disabled:text-zinc-400 disabled:transform-none",
+    secondary: "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:border-zinc-700 disabled:transform-none",
+    outline: "bg-transparent border-2 border-zinc-700 hover:border-zinc-500 text-zinc-300 disabled:border-zinc-800 disabled:text-zinc-600 disabled:transform-none"
   };
 
   return (
