@@ -16,20 +16,23 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-        const has = await window.aistudio.hasSelectedApiKey();
-        setHasApiKey(has);
-      } else {
-        // Fallback if not running in AI Studio environment
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey) {
         setHasApiKey(true);
+      } else {
+        setHasApiKey(false);
       }
     };
     checkKey();
   }, []);
 
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
+  const handleSaveKey = (key: string) => {
+    if (key.trim().length > 0) {
+      // In a real app you might want to save this to localStorage or context
+      // For now we just set the state to allow usage
+      // Note: This won't persist across reloads unless we add storage logic
+      // But for this fix, we just want to enable the app to work if env var is missing
+      (window as any).GEMINI_API_KEY = key;
       setHasApiKey(true);
     }
   };
@@ -53,7 +56,7 @@ const App: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      
+
       // Check for specific API key error to reset selection
       if (err.message && err.message.includes("Requested entity was not found")) {
         setHasApiKey(false);
@@ -89,18 +92,30 @@ const App: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">TubeGenie Pro</h1>
           <p className="text-zinc-400 mb-6">
-            This app uses the advanced <strong>Gemini 3 Pro</strong> model to generate high-quality YouTube thumbnails. Please select a paid API key to continue.
+            This app uses the advanced <strong>Gemini 3 Pro</strong> model. Please provide your API key to continue.
           </p>
-          <Button onClick={handleSelectKey} className="w-full mb-4">
-            Select API Key
-          </Button>
-          <a 
-            href="https://ai.google.dev/gemini-api/docs/billing" 
-            target="_blank" 
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            handleSaveKey(formData.get('apiKey') as string);
+          }} className="w-full mb-4">
+            <input
+              name="apiKey"
+              type="password"
+              placeholder="Enter Gemini API Key"
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all mb-4"
+            />
+            <Button type="submit" className="w-full">
+              Start Creating
+            </Button>
+          </form>
+          <a
+            href="https://ai.google.dev/gemini-api/docs/billing"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-zinc-500 hover:text-red-400 underline transition-colors"
           >
-            About Billing & API Keys
+            Get an API Key
           </a>
         </div>
       </div>
@@ -120,16 +135,16 @@ const App: React.FC = () => {
       <Header />
 
       <main className="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8">
-        
+
         {/* Left Side: Controls */}
         <div className="w-full lg:w-1/2 space-y-6">
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-6">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                  <span className="w-1 h-6 bg-red-500 rounded-full"></span>
-                  Config
-                </h2>
-                <span className="text-xs font-medium bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">PRO Model</span>
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <span className="w-1 h-6 bg-red-500 rounded-full"></span>
+                Config
+              </h2>
+              <span className="text-xs font-medium bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">PRO Model</span>
             </div>
 
             {/* Topic Input */}
@@ -148,9 +163,9 @@ const App: React.FC = () => {
             </div>
 
             {/* File Input */}
-            <UploadZone 
-              onFileSelect={setSelectedFile} 
-              selectedFile={selectedFile} 
+            <UploadZone
+              onFileSelect={setSelectedFile}
+              selectedFile={selectedFile}
             />
 
             {/* Style Selector */}
@@ -165,8 +180,8 @@ const App: React.FC = () => {
                     onClick={() => setSelectedStyle(style)}
                     className={`
                       px-4 py-3 rounded-xl text-left text-sm font-medium transition-all duration-200 border
-                      ${selectedStyle === style 
-                        ? 'bg-red-600/10 border-red-600 text-red-400' 
+                      ${selectedStyle === style
+                        ? 'bg-red-600/10 border-red-600 text-red-400'
                         : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'}
                     `}
                   >
@@ -178,8 +193,8 @@ const App: React.FC = () => {
 
             {/* Generate Button */}
             <div className="pt-2">
-              <Button 
-                onClick={handleGenerate} 
+              <Button
+                onClick={handleGenerate}
                 isLoading={appState === AppState.GENERATING}
                 className="w-full"
                 disabled={!topic || !selectedFile}
@@ -221,9 +236,9 @@ const App: React.FC = () => {
               )}
 
               {resultUrl && appState === AppState.SUCCESS && (
-                <img 
-                  src={resultUrl} 
-                  alt="Generated Thumbnail" 
+                <img
+                  src={resultUrl}
+                  alt="Generated Thumbnail"
                   className="w-full h-full object-contain"
                 />
               )}
@@ -235,10 +250,10 @@ const App: React.FC = () => {
                   Download Image
                 </Button>
                 <Button variant="secondary" onClick={() => {
-                    setAppState(AppState.IDLE);
-                    setResultUrl(null);
+                  setAppState(AppState.IDLE);
+                  setResultUrl(null);
                 }}>
-                   Clear
+                  Clear
                 </Button>
               </div>
             )}
@@ -248,9 +263,9 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <footer className="w-full py-6 border-t border-zinc-800 mt-auto">
-         <div className="text-center text-zinc-600 text-sm">
-            Powered by Gemini 3 Pro Image
-         </div>
+        <div className="text-center text-zinc-600 text-sm">
+          Powered by Gemini 3 Pro Image
+        </div>
       </footer>
     </div>
   );

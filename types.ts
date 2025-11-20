@@ -17,10 +17,3 @@ export enum AppState {
   SUCCESS,
   ERROR
 }
-
-declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-}
