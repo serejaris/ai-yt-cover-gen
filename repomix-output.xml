@@ -1,0 +1,845 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+components/
+  Button.tsx
+  Header.tsx
+  UploadZone.tsx
+services/
+  geminiService.ts
+.gitignore
+App.tsx
+index.html
+index.tsx
+metadata.json
+package.json
+README.md
+tsconfig.json
+types.ts
+vite.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="components/Button.tsx">
+import React from 'react';
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline';
+  isLoading?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  variant = 'primary', 
+  isLoading = false, 
+  className = '', 
+  disabled,
+  ...props 
+}) => {
+  const baseStyles = "px-6 py-3 rounded-xl font-bold transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
+  
+  const variants = {
+    primary: "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-lg shadow-red-900/20",
+    secondary: "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700",
+    outline: "bg-transparent border-2 border-zinc-700 hover:border-zinc-500 text-zinc-300"
+  };
+
+  return (
+    <button 
+      className={`${baseStyles} ${variants[variant]} ${className}`}
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading ? (
+        <>
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Generating...
+        </>
+      ) : children}
+    </button>
+  );
+};
+
+export default Button;
+</file>
+
+<file path="components/Header.tsx">
+import React from 'react';
+
+const Header: React.FC = () => {
+  return (
+    <header className="w-full py-6 border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-10">
+      <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Tube<span className="text-red-500">Genie</span>
+          </h1>
+        </div>
+        <div className="text-sm text-zinc-400">
+          AI Thumbnail Generator
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+</file>
+
+<file path="components/UploadZone.tsx">
+import React, { useRef, useState } from 'react';
+
+interface UploadZoneProps {
+  onFileSelect: (file: File) => void;
+  selectedFile: File | null;
+}
+
+const UploadZone: React.FC<UploadZoneProps> = ({ onFileSelect, selectedFile }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      return;
+    }
+    
+    onFileSelect(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const clearFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFileSelect(null as any);
+    setPreviewUrl(null);
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-medium text-zinc-300 mb-2">
+        Source Photo (You)
+      </label>
+      <div
+        onClick={() => inputRef.current?.click()}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`
+          relative w-full h-64 rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer flex flex-col items-center justify-center overflow-hidden group
+          ${isDragging ? 'border-red-500 bg-red-500/10' : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-500'}
+          ${previewUrl ? 'border-solid border-zinc-600' : ''}
+        `}
+      >
+        <input
+          type="file"
+          ref={inputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*"
+        />
+
+        {previewUrl ? (
+          <div className="relative w-full h-full">
+            <img 
+              src={previewUrl} 
+              alt="Preview" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+               <span className="text-white font-medium bg-black/50 px-4 py-2 rounded-lg backdrop-blur-sm">Change Photo</span>
+            </div>
+            <button 
+              onClick={clearFile}
+              className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition-colors z-10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div className="text-center p-6">
+            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-zinc-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+              </svg>
+            </div>
+            <p className="text-zinc-300 font-medium">Click or drag to upload your photo</p>
+            <p className="text-zinc-500 text-sm mt-1">Supports JPG, PNG (Max 5MB)</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UploadZone;
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="App.tsx">
+import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import Button from './components/Button';
+import UploadZone from './components/UploadZone';
+import { ThumbnailStyle, AppState } from './types';
+import { generateThumbnail } from './services/geminiService';
+
+const App: React.FC = () => {
+  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
+  const [topic, setTopic] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<ThumbnailStyle>(ThumbnailStyle.CLICKBAIT);
+  const [appState, setAppState] = useState<AppState>(AppState.IDLE);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      if (window.aistudio && window.aistudio.hasSelectedApiKey) {
+        const has = await window.aistudio.hasSelectedApiKey();
+        setHasApiKey(has);
+      } else {
+        // Fallback if not running in AI Studio environment
+        setHasApiKey(true);
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleSelectKey = async () => {
+    if (window.aistudio && window.aistudio.openSelectKey) {
+      await window.aistudio.openSelectKey();
+      setHasApiKey(true);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!selectedFile || !topic) {
+      setErrorMsg("Please provide both a photo and a topic.");
+      return;
+    }
+
+    setAppState(AppState.GENERATING);
+    setErrorMsg(null);
+
+    try {
+      const url = await generateThumbnail(selectedFile, topic, selectedStyle);
+      if (url) {
+        setResultUrl(url);
+        setAppState(AppState.SUCCESS);
+      } else {
+        throw new Error("The AI returned a response, but no image was generated. Please try a different prompt or image.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      
+      // Check for specific API key error to reset selection
+      if (err.message && err.message.includes("Requested entity was not found")) {
+        setHasApiKey(false);
+        setErrorMsg("API Key session expired or invalid. Please select your key again.");
+        setAppState(AppState.IDLE);
+        return;
+      }
+
+      setAppState(AppState.ERROR);
+      setErrorMsg(err.message || "Something went wrong during generation.");
+    }
+  };
+
+  const handleDownload = () => {
+    if (!resultUrl) return;
+    const link = document.createElement('a');
+    link.href = resultUrl;
+    link.download = `thumbnail-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // API Key Selection Screen
+  if (hasApiKey === false) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 text-center">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-red-900/10">
+          <div className="w-16 h-16 bg-red-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-red-500">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">TubeGenie Pro</h1>
+          <p className="text-zinc-400 mb-6">
+            This app uses the advanced <strong>Gemini 3 Pro</strong> model to generate high-quality YouTube thumbnails. Please select a paid API key to continue.
+          </p>
+          <Button onClick={handleSelectKey} className="w-full mb-4">
+            Select API Key
+          </Button>
+          <a 
+            href="https://ai.google.dev/gemini-api/docs/billing" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-zinc-500 hover:text-red-400 underline transition-colors"
+          >
+            About Billing & API Keys
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state while checking for key
+  if (hasApiKey === null) {
+    return <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>;
+  }
+
+  // Main App UI
+  return (
+    <div className="min-h-screen flex flex-col font-sans selection:bg-red-500/30">
+      <Header />
+
+      <main className="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8">
+        
+        {/* Left Side: Controls */}
+        <div className="w-full lg:w-1/2 space-y-6">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-6">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <span className="w-1 h-6 bg-red-500 rounded-full"></span>
+                  Config
+                </h2>
+                <span className="text-xs font-medium bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">PRO Model</span>
+            </div>
+
+            {/* Topic Input */}
+            <div>
+              <label htmlFor="topic" className="block text-sm font-medium text-zinc-300 mb-2">
+                Video Topic / Title
+              </label>
+              <input
+                type="text"
+                id="topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g., I Spent 24 Hours in a Haunted House"
+                className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+              />
+            </div>
+
+            {/* File Input */}
+            <UploadZone 
+              onFileSelect={setSelectedFile} 
+              selectedFile={selectedFile} 
+            />
+
+            {/* Style Selector */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Thumbnail Style
+              </label>
+              <div className="grid grid-cols-1 gap-2">
+                {Object.values(ThumbnailStyle).map((style) => (
+                  <button
+                    key={style}
+                    onClick={() => setSelectedStyle(style)}
+                    className={`
+                      px-4 py-3 rounded-xl text-left text-sm font-medium transition-all duration-200 border
+                      ${selectedStyle === style 
+                        ? 'bg-red-600/10 border-red-600 text-red-400' 
+                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'}
+                    `}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Generate Button */}
+            <div className="pt-2">
+              <Button 
+                onClick={handleGenerate} 
+                isLoading={appState === AppState.GENERATING}
+                className="w-full"
+                disabled={!topic || !selectedFile}
+              >
+                Generate Thumbnail
+              </Button>
+              {errorMsg && (
+                <p className="text-red-400 text-sm mt-3 bg-red-900/20 p-3 rounded-lg border border-red-900/50">
+                  {errorMsg}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Preview */}
+        <div className="w-full lg:w-1/2">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 h-full flex flex-col">
+            <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
+              <span className="w-1 h-6 bg-zinc-500 rounded-full"></span>
+              Result
+            </h2>
+
+            <div className="flex-grow flex items-center justify-center bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden min-h-[300px] relative">
+              {appState === AppState.IDLE && (
+                <div className="text-zinc-600 text-center p-8">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto mb-3 opacity-20">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                  <p>Your generated thumbnail will appear here</p>
+                </div>
+              )}
+
+              {appState === AppState.GENERATING && (
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-zinc-400 animate-pulse">Creating masterpiece...</p>
+                </div>
+              )}
+
+              {resultUrl && appState === AppState.SUCCESS && (
+                <img 
+                  src={resultUrl} 
+                  alt="Generated Thumbnail" 
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+
+            {appState === AppState.SUCCESS && (
+              <div className="mt-6 flex gap-3">
+                <Button onClick={handleDownload} className="w-full">
+                  Download Image
+                </Button>
+                <Button variant="secondary" onClick={() => {
+                    setAppState(AppState.IDLE);
+                    setResultUrl(null);
+                }}>
+                   Clear
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full py-6 border-t border-zinc-800 mt-auto">
+         <div className="text-center text-zinc-600 text-sm">
+            Powered by Gemini 3 Pro Image
+         </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TubeGenie AI - YouTube Thumbnail Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #0f0f0f;
+        color: #ffffff;
+      }
+      /* Custom scrollbar for webkit */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f1f1f;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #3f3f3f;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+</file>
+
+<file path="index.tsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+</file>
+
+<file path="metadata.json">
+{
+  "name": "Copy of TubeGenie AI",
+  "description": "Generate professional YouTube thumbnails from your photos using Gemini 3 Pro Image.",
+  "requestFramePermissions": []
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "copy-of-tubegenie-ai",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@google/genai": "^1.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+</file>
+
+<file path="types.ts">
+export enum ThumbnailStyle {
+  MINIMALIST = 'Minimalist & Clean',
+  CLICKBAIT = 'High Contrast & Emotional (Clickbait)',
+  GAMING = 'Gaming & Neon',
+  PROFESSIONAL = 'Professional & Corporate',
+  VLOG = 'Lifestyle & Vlog'
+}
+
+export interface GeneratedImage {
+  url: string;
+  promptUsed: string;
+}
+
+export enum AppState {
+  IDLE,
+  GENERATING,
+  SUCCESS,
+  ERROR
+}
+
+declare global {
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
+}
+</file>
+
+<file path="vite.config.ts">
+import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, '.', '');
+    return {
+      server: {
+        port: 3000,
+        host: '0.0.0.0',
+      },
+      plugins: [react()],
+      define: {
+        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      },
+      resolve: {
+        alias: {
+          '@': path.resolve(__dirname, '.'),
+        }
+      }
+    };
+});
+</file>
+
+<file path="services/geminiService.ts">
+import { GoogleGenAI } from "@google/genai";
+import { ThumbnailStyle } from "../types";
+
+const getBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove the data:image/xyz;base64, prefix
+      const base64Data = result.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+export const generateThumbnail = async (
+  imageFile: File,
+  topic: string,
+  style: ThumbnailStyle
+): Promise<string | null> => {
+  if (!process.env.API_KEY) {
+    throw new Error("API Key is missing. Please check your environment variables.");
+  }
+
+  // Always create a new instance to ensure the latest key is used
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const base64Image = await getBase64(imageFile);
+
+  // Construct a prompt that guides the model to create a YouTube thumbnail
+  // specifically using the user's image as the source subject.
+  const prompt = `
+    Create a high-quality YouTube thumbnail (16:9 aspect ratio) based on the attached image.
+    
+    Context/Topic of the video: "${topic}".
+    Visual Style: ${style}.
+    
+    Instructions:
+    1. Use the person or main subject from the provided image.
+    2. Transform the background and lighting to match the "${style}" style.
+    3. The image should be eye-catching, high resolution, and suitable for a YouTube cover.
+    4. If the topic implies a specific emotion (e.g., shock, happiness), modify the subject's expression subtly to match if possible, or enhance the lighting to convey the mood.
+    5. Make it look like a professional YouTuber's thumbnail.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-image-preview',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: imageFile.type,
+              data: base64Image
+            }
+          },
+          {
+            text: prompt
+          }
+        ]
+      },
+      config: {
+        imageConfig: {
+           aspectRatio: "16:9",
+           // Optional: Request higher resolution if needed, defaults to 1K.
+           imageSize: "2K" 
+        }
+      }
+    });
+
+    // Iterate through parts to find the image
+    if (response.candidates && response.candidates.length > 0) {
+      const parts = response.candidates[0].content.parts;
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error generating thumbnail:", error);
+    throw error;
+  }
+};
+</file>
+
+<file path="README.md">
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
+
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: https://ai.studio/apps/drive/1WLLUM48xQte3C3gqKwWV_uATzjkEu4aW
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
+</file>
+
+</files>
