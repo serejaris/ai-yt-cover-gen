@@ -14,8 +14,8 @@ const Header: React.FC = () => {
             Tube<span className="text-red-500">Genie</span>
           </h1>
         </div>
-        <div className="text-sm text-zinc-400">
-          AI Thumbnail Generator
+        <div className="text-sm text-zinc-400 hidden sm:block">
+          Генератор превью на базе ИИ
         </div>
       </div>
     </header>

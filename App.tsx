@@ -5,6 +5,14 @@ import UploadZone from './components/UploadZone';
 import { ThumbnailStyle, AppState } from './types';
 import { generateThumbnail } from './services/geminiService';
 
+const styleTranslations: Record<ThumbnailStyle, string> = {
+  [ThumbnailStyle.MINIMALIST]: 'Минимализм и чистота',
+  [ThumbnailStyle.CLICKBAIT]: 'Высокий контраст и эмоции (Кликбейт)',
+  [ThumbnailStyle.GAMING]: 'Гейминг и неон',
+  [ThumbnailStyle.PROFESSIONAL]: 'Профессиональный и корпоративный',
+  [ThumbnailStyle.VLOG]: 'Лайфстайл и влог'
+};
+
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
   const [topic, setTopic] = useState('');
@@ -39,7 +47,7 @@ const App: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedFile || !topic) {
-      setErrorMsg("Please provide both a photo and a topic.");
+      setErrorMsg("Пожалуйста, укажите тему и загрузите фото.");
       return;
     }
 
@@ -52,7 +60,7 @@ const App: React.FC = () => {
         setResultUrl(url);
         setAppState(AppState.SUCCESS);
       } else {
-        throw new Error("The AI returned a response, but no image was generated. Please try a different prompt or image.");
+        throw new Error("ИИ вернул ответ, но изображение не было сгенерировано. Попробуйте другой промпт или изображение.");
       }
     } catch (err: any) {
       console.error(err);
@@ -60,13 +68,13 @@ const App: React.FC = () => {
       // Check for specific API key error to reset selection
       if (err.message && err.message.includes("Requested entity was not found")) {
         setHasApiKey(false);
-        setErrorMsg("API Key session expired or invalid. Please select your key again.");
+        setErrorMsg("Сессия API ключа истекла или он недействителен. Пожалуйста, выберите ключ заново.");
         setAppState(AppState.IDLE);
         return;
       }
 
       setAppState(AppState.ERROR);
-      setErrorMsg(err.message || "Something went wrong during generation.");
+      setErrorMsg(err.message || "Что-то пошло не так при генерации.");
     }
   };
 
@@ -92,7 +100,7 @@ const App: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">TubeGenie Pro</h1>
           <p className="text-zinc-400 mb-6">
-            This app uses the advanced <strong>Gemini 3 Pro</strong> model. Please provide your API key to continue.
+            Это приложение использует передовую модель <strong>Gemini 3 Pro</strong>. Пожалуйста, укажите ваш API ключ для продолжения.
           </p>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -102,11 +110,11 @@ const App: React.FC = () => {
             <input
               name="apiKey"
               type="password"
-              placeholder="Enter Gemini API Key"
+              placeholder="Введите Gemini API Key"
               className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all mb-4"
             />
             <Button type="submit" className="w-full">
-              Start Creating
+              Начать создание
             </Button>
           </form>
           <a
@@ -115,7 +123,7 @@ const App: React.FC = () => {
             rel="noopener noreferrer"
             className="text-xs text-zinc-500 hover:text-red-400 underline transition-colors"
           >
-            Get an API Key
+            Получить API ключ
           </a>
         </div>
       </div>
@@ -131,34 +139,36 @@ const App: React.FC = () => {
 
   // Main App UI
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-red-500/30">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-red-500/30 bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
       <Header />
 
-      <main className="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8">
+      <main className="flex-grow w-full max-w-6xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 relative z-0">
+        {/* Background ambient light */}
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
         {/* Left Side: Controls */}
-        <div className="w-full lg:w-1/2 space-y-6">
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-6">
+        <div className="w-full lg:w-5/12 space-y-6">
+          <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/60 rounded-3xl p-6 space-y-6 shadow-xl shadow-black/20">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                 <span className="w-1 h-6 bg-red-500 rounded-full"></span>
-                Config
+                Настройки
               </h2>
-              <span className="text-xs font-medium bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">PRO Model</span>
+              <span className="text-xs font-medium bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">PRO Модель</span>
             </div>
 
             {/* Topic Input */}
             <div>
-              <label htmlFor="topic" className="block text-sm font-medium text-zinc-300 mb-2">
-                Video Topic / Title
+              <label htmlFor="topic" className="block text-sm font-medium text-zinc-300 mb-2 pl-1">
+                Тема видео / Заголовок
               </label>
               <input
                 type="text"
                 id="topic"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g., I Spent 24 Hours in a Haunted House"
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                placeholder="например, Я провел 24 часа в доме с привидениями"
+                className="w-full bg-zinc-950/50 border border-zinc-700/50 rounded-xl px-4 py-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
               />
             </div>
 
@@ -170,22 +180,25 @@ const App: React.FC = () => {
 
             {/* Style Selector */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Thumbnail Style
+              <label className="block text-sm font-medium text-zinc-300 mb-2 pl-1">
+                Стиль превью
               </label>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2.5">
                 {Object.values(ThumbnailStyle).map((style) => (
                   <button
                     key={style}
                     onClick={() => setSelectedStyle(style)}
                     className={`
-                      px-4 py-3 rounded-xl text-left text-sm font-medium transition-all duration-200 border
+                      px-4 py-3.5 rounded-xl text-left text-sm font-medium transition-all duration-200 border flex items-center justify-between group
                       ${selectedStyle === style
-                        ? 'bg-red-600/10 border-red-600 text-red-400'
-                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'}
+                        ? 'bg-red-500/10 border-red-500/50 text-red-400 shadow-lg shadow-red-900/10'
+                        : 'bg-zinc-950/30 border-zinc-800/50 text-zinc-400 hover:bg-zinc-900/50 hover:border-zinc-700'}
                     `}
                   >
-                    {style}
+                    <span>{styleTranslations[style]}</span>
+                    {selectedStyle === style && (
+                       <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -199,7 +212,7 @@ const App: React.FC = () => {
                 className="w-full"
                 disabled={!topic || !selectedFile}
               >
-                Generate Thumbnail
+                Сгенерировать превью
               </Button>
               {errorMsg && (
                 <p className="text-red-400 text-sm mt-3 bg-red-900/20 p-3 rounded-lg border border-red-900/50">
@@ -211,34 +224,37 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Side: Preview */}
-        <div className="w-full lg:w-1/2">
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 h-full flex flex-col">
+        <div className="w-full lg:w-7/12">
+          <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/60 rounded-3xl p-6 h-full flex flex-col shadow-xl shadow-black/20">
             <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
               <span className="w-1 h-6 bg-zinc-500 rounded-full"></span>
-              Result
+              Результат
             </h2>
 
-            <div className="flex-grow flex items-center justify-center bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden min-h-[300px] relative">
+            <div className="flex-grow flex items-center justify-center bg-zinc-950/50 rounded-2xl border-2 border-dashed border-zinc-800/50 overflow-hidden min-h-[400px] relative group">
               {appState === AppState.IDLE && (
-                <div className="text-zinc-600 text-center p-8">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto mb-3 opacity-20">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                  <p>Your generated thumbnail will appear here</p>
+                <div className="text-zinc-600 text-center p-12">
+                  <div className="w-20 h-20 bg-zinc-900/80 rounded-full flex items-center justify-center mx-auto mb-6 border border-zinc-800 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 opacity-40">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-lg font-medium text-zinc-500">Здесь появится ваш шедевр</p>
+                  <p className="text-sm text-zinc-600 mt-2">Заполните настройки слева и нажмите "Сгенерировать"</p>
                 </div>
               )}
 
               {appState === AppState.GENERATING && (
                 <div className="text-center">
                   <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-zinc-400 animate-pulse">Creating masterpiece...</p>
+                  <p className="text-zinc-400 animate-pulse">Создаем шедевр...</p>
                 </div>
               )}
 
               {resultUrl && appState === AppState.SUCCESS && (
                 <img
                   src={resultUrl}
-                  alt="Generated Thumbnail"
+                  alt="Сгенерированное превью"
                   className="w-full h-full object-contain"
                 />
               )}
@@ -247,13 +263,13 @@ const App: React.FC = () => {
             {appState === AppState.SUCCESS && (
               <div className="mt-6 flex gap-3">
                 <Button onClick={handleDownload} className="w-full">
-                  Download Image
+                  Скачать
                 </Button>
                 <Button variant="secondary" onClick={() => {
                   setAppState(AppState.IDLE);
                   setResultUrl(null);
                 }}>
-                  Clear
+                  Очистить
                 </Button>
               </div>
             )}
