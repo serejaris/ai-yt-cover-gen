@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import VibeMarquee from './components/VibeMarquee';
 import Header from './components/Header';
 import Button from './components/Button';
 import UploadZone from './components/UploadZone';
@@ -91,8 +92,10 @@ const App: React.FC = () => {
   // API Key Selection Screen
   if (hasApiKey === false) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 text-center">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-red-900/10">
+      <div className="min-h-screen bg-zinc-950 flex flex-col font-sans text-white">
+        <VibeMarquee />
+        <div className="flex-grow flex flex-col items-center justify-center p-4 text-center">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-red-900/10">
           <div className="w-16 h-16 bg-red-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-red-500">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
@@ -126,6 +129,7 @@ const App: React.FC = () => {
             Получить API ключ
           </a>
         </div>
+        </div>
       </div>
     );
   }
@@ -140,6 +144,7 @@ const App: React.FC = () => {
   // Main App UI
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-red-500/30 bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+      <VibeMarquee />
       <Header />
 
       <main className="flex-grow w-full max-w-6xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 relative z-0">
