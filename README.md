@@ -1,20 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# TubeGenie Pro 🧞‍♂️
 
-# Run and deploy your AI Studio app
+Веб-приложение для создания превью (thumbnails) для YouTube-видео с помощью модели Google Gemini 3 Pro.
 
-This contains everything you need to run your app locally.
+## ⚙️ Быстрый старт
 
-View your app in AI Studio: https://ai.studio/apps/drive/1WLLUM48xQte3C3gqKwWV_uATzjkEu4aW
+1.  **Установите зависимости:**
+    ```bash
+    npm install
+    ```
 
-## Run Locally
+2.  **Запустите приложение:**
+    ```bash
+    npm run dev
+    ```
 
-**Prerequisites:**  Node.js
+## 📖 Как использовать
 
+1.  **Выберите API-ключ Google AI** при запуске.
+2.  **Введите тему** вашего видео.
+3.  **Загрузите изображение** для основы.
+4.  **Выберите стиль** превью.
+5.  Нажмите **"Generate Thumbnail"**.
+6.  **Скачайте** готовый результат.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Примечание:** Для работы приложения требуется API-ключ от Google AI.
